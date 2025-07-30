@@ -1,3 +1,19 @@
 <router-outlet />
 
+
+<!-- Header -->
+<div class="text-center mb-8">
+    <div class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+        Todo App
+    </div>
+    <p class="text-gray-600">Organize your tasks with style and efficiency</p>
+</div>
 <app-todo-list />
+
+ <!-- Stats Dashboard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 px-4">
+
+        @for (status of todoStatuses(); track status) {
+            <app-status-card [statusItem]="status" />
+        }
+        </div>
