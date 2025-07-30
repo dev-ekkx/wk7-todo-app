@@ -1,1 +1,1 @@
-export type TodoStatus = 'pending' | 'completed' | 'highPriority' | "total";
+export type TodoStatus = "pending" | "completed" | "all";

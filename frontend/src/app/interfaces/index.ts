@@ -2,9 +2,7 @@ import { TodoStatus } from "../types";
 
 export interface TodoInterface {
     id: string;
-    title: string;
-    description: string;
+    value: string;
     status: TodoStatus;
-    count: number;
 }
 

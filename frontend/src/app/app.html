@@ -1,19 +1,47 @@
 <router-outlet />
 
 
-<!-- Header -->
-<div class="text-center mb-8">
-    <div class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-        Todo App
-    </div>
-    <p class="text-gray-600">Organize your tasks with style and efficiency</p>
-</div>
-<app-todo-list />
+<main class="relative flex items-center justify-center text-neutral-700">
+  <div class="absolute top-0 left-0 w-full -z-10 h-[15rem] bg-[url('assets/images/background.svg')] bg-cover bg-center"></div>
+  <section class=" w-full max-w-md px-2 md:px-0 mx-auto my-20 flex flex-col gap-4">
+    <h2 class="text-white text-3xl font-semibold mb-2">Todo App</h2>
+    <form (ngSubmit)="onSubmit($event)" 
+    class="flex items-center gap-4 p-4 bg-white border border-neutral-300 rounded-md shadow-md"
+    >
+    <button 
+    [disabled]="!isValidTodo()"
+      type="submit"
+      class="w-5 h-5 rounded-full border border-neutral-300 cursor-pointer disabled:cursor-not-allowed"
 
- <!-- Stats Dashboard -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 px-4">
+      ></button> 
+      <input 
+      type="text" 
+      placeholder="What needs to be done?" 
+      class="flex-1 outline-none placeholder:text-neutral-400"
+      [formControl]="todoTitle"
+      name="title"
+      id="title"
+      />
+    </form>
 
-        @for (status of todoStatuses(); track status) {
-            <app-status-card [statusItem]="status" />
+    <section class="rounded-md shadow-md bg-white py-4 flex flex-col  gap-2">
+      <div class="max-h-[25rem] flex flex-col gap-2 overflow-y-auto divide-neutral-300 divide-y">
+        @for (todo of todos(); track todo.id) {
+          <div class="flex items-center px-4 gap-4" [class]="$index === 0 ? 'pb-2' : ''">
+            <button (click)="markAsCompleted(todo.id)" class="w-5 h-5 rounded-full border border-neutral-300 cursor-pointer">
+              @if (todo.status === "completed") {
+                <img src="assets/images/check.svg" alt="check">
+              }
+            </button>
+            <span>{{todo.value}}</span>
+          </div>
+        } @empty {
+          <div class="text-center text-neutral-500 italic">No todos available</div>
         }
-        </div>
+      </div>
+      <div class="flex items-center gap-4 justify-between px-4 border-t border-neutral-300 pt-2 mt-2">
+        <div>All ({{todos().length}})</div>
+      </div>
+    </section>
+  </section>
+</main>

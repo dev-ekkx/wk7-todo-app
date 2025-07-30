@@ -1,60 +1,83 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, effect, OnDestroy, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TodoList } from "./components/todo-list/todo-list";
-import { StatusCard } from "./components/status-card/status-card";
 import { TodoInterface } from './interfaces';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TodoList, StatusCard],
+  imports: [RouterOutlet, TodoList, FormsModule, ReactiveFormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnDestroy {
   protected readonly title = signal('frontend');
-  todos = signal([]);
+  protected isValidTodo = signal(false);
+
+  private readonly destroy$ = new Subject<void>() 
+
+  constructor() {
+  this.todoTitle.valueChanges.pipe(
+    takeUntil(this.destroy$),
+  ).subscribe(val => {
+      const value = (val ?? "").trim();
+      console.log('value', value);
+      this.isValidTodo.set(value.length > 2);
+      this.newTodo.set({
+        ...this.newTodo(),
+        value,
+        id: crypto.randomUUID()
+      });
+    })
+  }
+
+  todos = signal<TodoInterface[]>(localStorage.getItem('todos') ? JSON.parse(localStorage.getItem('todos')!) : []);
+
+    todoTitle = new FormControl({value: "", disabled: false});
 
 
-  todoStatuses = signal<TodoInterface[]>([
-    {
-  id: '',
-    title: '',
-    description: '',
-    status: 'total',
-    count: 10,
-    },
-    {
-      id: '',
-      title: '',
-      description: '',
-      status: 'completed',
-      count: 5,
-    },
-    {
-      id: '',
-      title: '',
-      description: '',
+  newTodo = signal<TodoInterface>({
+    id: crypto.randomUUID(),
+    value: '',
+    status: 'pending',
+  });
+
+
+  onSubmit(event: Event) {
+    event.preventDefault();
+  this.todos.update(todos => {
+      const newTodos = [...todos, this.newTodo()];
+      localStorage.setItem('todos', JSON.stringify(newTodos));
+      return newTodos;
+    });
+    this.todoTitle.setValue('');
+    this.isValidTodo.set(false);
+    this.newTodo.set({
+      id: crypto.randomUUID(),
+      value: '',
       status: 'pending',
-      count: 3,
-    },
-    {
-      id: '',
-      title: '',
-      description: '',
-      status: 'highPriority',
-      count: 2,
-    },
-  ])
-
-  getCompletedCount() {
-    return 0
+  })
   }
 
-  getPendingCount() {
-    return 0
+  markAsCompleted(id: string) {
+    this.todos.update(todos => {
+      const updatedTodos = todos.map(todo => {
+        if (todo.id === id) {
+          const currentStatus = todo.status;
+          if (currentStatus === 'completed') {
+            return { ...todo, status: 'pending' as TodoInterface['status'] };
+          }
+          return { ...todo, status: 'completed' as TodoInterface['status'] };
+        }
+        return todo;
+      });
+      localStorage.setItem('todos', JSON.stringify(updatedTodos));
+      return updatedTodos;
+    });
   }
 
-getHighPriorityCount() {
-    return 0
-  }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();}
 }
