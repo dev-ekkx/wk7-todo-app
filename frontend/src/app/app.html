@@ -3,7 +3,7 @@
 
 <main class="relative flex items-center justify-center text-neutral-700">
   <div class="absolute top-0 left-0 w-full -z-10 h-[15rem] bg-[url('assets/images/background.svg')] bg-cover bg-center"></div>
-  <section class=" w-full max-w-md px-2 md:px-0 mx-auto my-20 flex flex-col gap-4">
+  <section class=" w-full max-w-lg px-2 md:px-0 mx-auto my-20 flex flex-col gap-4">
     <h2 class="text-white text-3xl font-semibold mb-2">Todo App</h2>
     <form (ngSubmit)="onSubmit($event)" 
     class="flex items-center gap-4 p-4 bg-white border border-neutral-300 rounded-md shadow-md"
@@ -12,35 +12,60 @@
     [disabled]="!isValidTodo()"
       type="submit"
       class="w-5 h-5 rounded-full border border-neutral-300 cursor-pointer disabled:cursor-not-allowed"
-
       ></button> 
       <input 
       type="text" 
       placeholder="What needs to be done?" 
       class="flex-1 outline-none placeholder:text-neutral-400"
-      [formControl]="todoTitle"
       name="title"
       id="title"
+      [(ngModel)]="todoTitle"
       />
     </form>
 
     <section class="rounded-md shadow-md bg-white py-4 flex flex-col  gap-2">
-      <div class="max-h-[25rem] flex flex-col gap-2 overflow-y-auto divide-neutral-300 divide-y">
-        @for (todo of todos(); track todo.id) {
-          <div class="flex items-center px-4 gap-4" [class]="$index === 0 ? 'pb-2' : ''">
+      <div class="max-h-[25rem] flex flex-col gap-4 overflow-y-auto divide-neutral-300 divide-y">
+        @for (todo of todoList(); track todo.id) {
+          <div class="flex items-center px-4 gap-4" [class.pb-4]="$index === 0" [class]="todo.status === 'completed' ? 'line-through italic text-neutral-500' : ''">
             <button (click)="markAsCompleted(todo.id)" class="w-5 h-5 rounded-full border border-neutral-300 cursor-pointer">
               @if (todo.status === "completed") {
                 <img src="assets/images/check.svg" alt="check">
               }
             </button>
-            <span>{{todo.value}}</span>
+            <form (ngSubmit)="updateTodo(todo.id)"
+            [ngFormOptions]="{ updateOn: 'change' }"
+            class="flex-1"
+            >
+              <input type="text"
+              id="todo-{{todo.id}}"
+              name="todo-{{todo.id}}"
+              (blur)="updateTodo(todo.id)"
+              [(ngModel)]="todo.value"
+              class="w-full outline-none"
+              [class]="todo.status === 'completed' ? 'line-through italic text-neutral-500' : ''"
+              >            
+            </form>
           </div>
         } @empty {
           <div class="text-center text-neutral-500 italic">No todos available</div>
         }
       </div>
       <div class="flex items-center gap-4 justify-between px-4 border-t border-neutral-300 pt-2 mt-2">
-        <div>All ({{todos().length}})</div>
+        <span class="text-sm">{{activeTodosCount()}} items left</span>
+      <div class="flex items-center gap-4 font-semibold *:cursor-pointer">
+        @for (status of statusButtons(); track status) {
+          <button (click)="updateTodoStatus(status)" 
+          class="capitalize"
+          [class.text-blue-500]="todoStatus() === status"
+          >
+            {{status === "pending" ? "active" : status}}
+          </button>
+        }
+      </div>
+      <button 
+      [disabled]="!todos().length" 
+      class="cursor-pointer hover:text-red-500 transition-all disabled:pointer-events-none"
+       (click)="clearCompleted()">Clear Completed</button>
       </div>
     </section>
   </section>
