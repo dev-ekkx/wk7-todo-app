@@ -17,4 +17,14 @@ export class Todo {
       todos: TodoInterface[];
     }>(`${this.host}/todos`)
   }
+
+  public createTodo(todo: string) {
+    const formData = new FormData()
+    formData.append('value', todo)
+    return this.http.post<{
+      message: "Todo created successfully"
+      todo: TodoInterface;
+    }>(`${this.host}/create-todo`, formData)
+
+  }
 }

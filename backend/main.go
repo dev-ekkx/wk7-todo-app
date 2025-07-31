@@ -32,7 +32,7 @@ func main() {
 
 	api := r.Group("/api")
 	{
-		// api.POST("/upload", services.UploadImages)
+		api.POST("/create-todo", services.CreateTodo)
 		api.GET("/todos", services.ListTodoItems)
 		// api.DELETE("/images/:key", services.DeleteImage)
 	}

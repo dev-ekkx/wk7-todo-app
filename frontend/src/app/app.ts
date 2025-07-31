@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, OnDestroy, OnInit, signal } from '
 import { RouterOutlet } from '@angular/router';
 import { TodoInterface } from './interfaces';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 import { TodoStatus } from './types';
 import { Todo } from './services/todo';
 
@@ -19,6 +19,7 @@ export class App implements OnInit, OnDestroy {
   protected statusButtons = signal<TodoStatus[]>(['all', 'active', 'completed']);
   protected todoTitle = signal("");
   protected isLoading = signal(false);
+  protected isSubmitting = signal(false);
   protected todos = signal<TodoInterface[]>(this.todosService.todos());
   protected newTodo = signal<TodoInterface>({
     id: crypto.randomUUID(),
@@ -74,24 +75,41 @@ export class App implements OnInit, OnDestroy {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    const value = (this.todoTitle() ?? "").trim();
-      this.newTodo.set({
-        ...this.newTodo(),
-        value,
-        id: crypto.randomUUID()
-      });
+    this.isSubmitting.set(true);
 
-  this.todos.update(todos => {
-      const newTodos = [...todos, this.newTodo()];
-      localStorage.setItem('todos', JSON.stringify(newTodos));
-      return newTodos;
-    });
-    this.todoTitle.set("");
-    this.newTodo.set({
-      id: crypto.randomUUID(),
-      value: '',
-      status: 'active',
-  })
+    this.todosService.createTodo(this.todoTitle()).pipe(take(1)).subscribe({
+      next: (response) => {
+        this.todos.update(todos => {
+        return [...todos, response.todo]
+      });
+      },
+      error: (error) => {
+        console.error('Error creating todo:', error);
+      },
+      complete: () => {
+        this.isSubmitting.set(false);
+        this.todoTitle.set("");
+      }
+    })
+
+  //   const value = (this.todoTitle() ?? "").trim();
+  //     this.newTodo.set({
+  //       ...this.newTodo(),
+  //       value,
+  //       id: crypto.randomUUID()
+  //     });
+
+  // this.todos.update(todos => {
+  //     const newTodos = [...todos, this.newTodo()];
+  //     localStorage.setItem('todos', JSON.stringify(newTodos));
+  //     return newTodos;
+  //   });
+  //   this.todoTitle.set("");
+  //   this.newTodo.set({
+  //     id: crypto.randomUUID(),
+  //     value: '',
+  //     status: 'active',
+  // })
   }
 
   markAsCompleted(id: string) {

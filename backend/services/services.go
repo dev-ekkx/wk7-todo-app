@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -33,4 +34,33 @@ func ListTodoItems(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"todos": todos,
 	})
+}
+
+func CreateTodo(c *gin.Context) {
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid multipart form"})
+		return
+	}
+
+	values := form.Value["value"]
+	if len(values) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing 'value' field in form data"})
+		return
+	}
+
+	currentDate := time.Now().Format("2025-01-01")
+
+	newTodo := TodoStruct{
+		ID:        uuid.New().String(),
+		Value:     values[0],
+		Status:    "pending",
+		CreatedAt: currentDate,
+		UpdatedAt: currentDate,
+	}
+
+	todos = append(todos, newTodo)
+	fmt.Println(todos)
+	c.JSON(http.StatusCreated, gin.H{"todo": newTodo})
 }
