@@ -50,9 +50,7 @@ export class App implements OnDestroy {
 
   onSubmit(event: Event) {
     event.preventDefault();
-
-
-          const value = (this.todoTitle() ?? "").trim();
+    const value = (this.todoTitle() ?? "").trim();
       this.newTodo.set({
         ...this.newTodo(),
         value,
@@ -64,8 +62,7 @@ export class App implements OnDestroy {
       localStorage.setItem('todos', JSON.stringify(newTodos));
       return newTodos;
     });
-    // this.todoTitle.setValue('');
-    this.todoTitle.set(" ");
+    this.todoTitle.set("");
     this.newTodo.set({
       id: crypto.randomUUID(),
       value: '',
