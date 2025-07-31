@@ -1,0 +1,109 @@
+# ===========================
+# Compiled Output / Binaries
+# ===========================
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go build artifacts
+main
+build/
+bin/
+dist/
+
+# TypeScript & Angular build
+dist/
+out-tsc/
+bazel-out/
+
+# Temporary directories
+tmp/
+temp/
+
+# ===========================
+# Dependency directories
+# ===========================
+node_modules/
+vendor/
+
+# ===========================
+# Logs and Runtime Data
+# ===========================
+*.log
+*.pid
+libpeerconnection.log
+testem.log
+npm-debug.log
+yarn-error.log
+
+# ===========================
+# Coverage/Test Reports
+# ===========================
+coverage/
+coverage.out
+*.cov
+*.coverprofile
+
+# ===========================
+# IDEs and Editor Settings
+# ===========================
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+*.swp
+*.swo
+*.bak
+
+# ===========================
+# Go-specific Files
+# ===========================
+go.work
+go.work.sum
+**/go.sum
+
+# ===========================
+# Environment and Secrets
+# ===========================
+.env
+.env.*
+*.key
+*.pem
+*.crt
+
+# ===========================
+# Miscellaneous
+# ===========================
+.angular/cache/
+.sass-cache/
+connect.lock
+typings/
+
+# ===========================
+# System Files
+# ===========================
+.DS_Store
+Thumbs.db
+
+# ===========================
+# CI/CD and Docker Artifacts
+# ===========================
+.docker/
+*.tar
+*.gz
+*.tgz
+.cache/
