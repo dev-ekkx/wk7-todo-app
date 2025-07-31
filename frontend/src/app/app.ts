@@ -1,28 +1,29 @@
-import { Component, computed, effect, OnDestroy, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { TodoList } from "./components/todo-list/todo-list";
 import { TodoInterface } from './interfaces';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { TodoStatus } from './types';
+import { Todo } from './services/todo';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TodoList, FormsModule],
+  imports: [RouterOutlet, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnDestroy {
+export class App implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>() 
-  protected readonly title = signal('frontend');
+  protected todosService = inject(Todo);
   protected todoStatus = signal<TodoStatus>(localStorage.getItem('todoStatus') as TodoStatus || 'all');
-  protected statusButtons = signal<TodoStatus[]>(['all', 'pending', 'completed']);
+  protected statusButtons = signal<TodoStatus[]>(['all', 'active', 'completed']);
   protected todoTitle = signal("");
-  protected todos = signal<TodoInterface[]>(localStorage.getItem('todos') ? JSON.parse(localStorage.getItem('todos')!) : []);
+  protected isLoading = signal(false);
+  protected todos = signal<TodoInterface[]>(this.todosService.todos());
   protected newTodo = signal<TodoInterface>({
     id: crypto.randomUUID(),
     value: '',
-    status: 'pending',
+    status: 'active',
   });
   
   protected todoList = computed(() => {
@@ -33,7 +34,7 @@ export class App implements OnDestroy {
   })
   
   protected activeTodosCount = computed(() => {
-    return this.todos().filter(todo => todo.status === 'pending').length;
+    return this.todos().filter(todo => todo.status === 'active').length;
   });
   
   constructor() {
@@ -42,7 +43,30 @@ export class App implements OnDestroy {
               this.todoStatus.set('all');
             }
           })
-        }
+  }
+
+  ngOnInit() {
+    this.loadTodos();
+  }
+
+  loadTodos() {
+    this.isLoading.set(true);
+    this.todosService.getTodos().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response) => {
+        this.todos.set(response.todos);
+        localStorage.setItem('todos', JSON.stringify(response.todos));
+      },
+      error: (error) => {
+        console.error('Error fetching todos:', error);
+      },
+      complete: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
+  
+
+
         protected isValidTodo = computed(() => {
           const value = (this.todoTitle() ?? "").trim();
           return value.length > 2;
@@ -66,7 +90,7 @@ export class App implements OnDestroy {
     this.newTodo.set({
       id: crypto.randomUUID(),
       value: '',
-      status: 'pending',
+      status: 'active',
   })
   }
 
@@ -76,7 +100,7 @@ export class App implements OnDestroy {
         if (todo.id === id) {
           const currentStatus = todo.status;
           if (currentStatus === 'completed') {
-            return { ...todo, status: 'pending' as TodoInterface['status'] };
+            return { ...todo, status: 'active' as TodoInterface['status'] };
           }
           return { ...todo, status: 'completed' as TodoInterface['status'] };
         }
@@ -111,6 +135,7 @@ export class App implements OnDestroy {
     this.todoStatus.set(status);
 localStorage.setItem('todoStatus', status);
   }
+
 
   ngOnDestroy(): void {
     this.destroy$.next();

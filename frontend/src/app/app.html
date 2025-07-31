@@ -24,7 +24,14 @@
     </form>
 
     <section class="rounded-md shadow-md bg-white py-4 flex flex-col  gap-2">
-      <div class="max-h-[25rem] flex flex-col gap-4 overflow-y-auto divide-neutral-300 divide-y">
+     
+      @if (isLoading()) {
+          <div class="flex items-center w-full h-[10rem] justify-center">
+              <div class="animate-spin rounded-full h-5 w-5 border-[2.5px] border-blue-600 border-t-transparent mr-3"></div>
+              <span>Loading more...</span>
+            </div>
+      }@else {
+        <div class="max-h-[25rem] flex flex-col gap-4 overflow-y-auto divide-neutral-300 divide-y">
         @for (todo of todoList(); track todo.id) {
           <div class="flex items-center px-4 gap-4" [class.pb-4]="$index === 0" [class]="todo.status === 'completed' ? 'line-through italic text-neutral-500' : ''">
             <button (click)="markAsCompleted(todo.id)" class="w-5 h-5 rounded-full border border-neutral-300 cursor-pointer">
@@ -47,8 +54,10 @@
           </div>
         } @empty {
           <div class="text-center text-neutral-500 italic">No todos available</div>
+          }
+        </div>
         }
-      </div>
+
       <div class="flex items-center gap-4 justify-between px-4 border-t border-neutral-300 pt-2 mt-2">
         <span class="text-sm">{{activeTodosCount()}} items left</span>
       <div class="flex items-center gap-4 font-semibold *:cursor-pointer">
@@ -57,7 +66,7 @@
           class="capitalize"
           [class.text-blue-500]="todoStatus() === status"
           >
-            {{status === "pending" ? "active" : status}}
+            {{status}}
           </button>
         }
       </div>
