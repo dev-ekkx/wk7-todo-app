@@ -1,13 +1,48 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+	"os"
+
+	"github.com/dev-ekkx/wk7-todo-app/services"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	router.Run()
+	gin.SetMode(gin.ReleaseMode)
+
+	// Load environment variables frm go dojo
+	// er := godotenv.Load()
+	// if er != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
+
+	port := os.Getenv("PORT")
+
+	// services.InitAWS()
+
+	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowCredentials: true,
+	}))
+
+	api := r.Group("/api")
+	{
+		// api.POST("/upload", services.UploadImages)
+		api.GET("/todos", services.ListTodoItems)
+		// api.DELETE("/images/:key", services.DeleteImage)
+	}
+
+	if port == "" {
+		port = "8080"
+	}
+	err := r.Run(":" + port)
+	if err != nil {
+		log.Fatal("Error loading env: ", err)
+		return
+	}
 }
