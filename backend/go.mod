@@ -3,13 +3,28 @@ module github.com/dev-ekkx/wk7-todo-app
 go 1.24.3
 
 require (
+	github.com/aws/aws-sdk-go-v2/config v1.30.2
+	github.com/gin-gonic/gin v1.10.1
+)
+
+require (
+	github.com/aws/aws-sdk-go-v2 v1.37.1 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.18.2 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.1 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.1 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.1 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.26.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.31.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.35.1 // indirect
+	github.com/aws/smithy-go v1.22.5 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
-	github.com/gin-gonic/gin v1.10.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.27.0 // indirect
