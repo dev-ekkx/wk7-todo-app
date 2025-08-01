@@ -8,6 +8,7 @@ import { TodoInterface } from '../interfaces';
 export class Todo {
   
   protected host = 'http://localhost:8080/api';
+  //  protected host = "/api";
   protected http = inject(HttpClient);
   public   todos = signal<TodoInterface[]>([]);
 
