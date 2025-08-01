@@ -1,8 +1,8 @@
 # Step 1: Build Angular frontend
-FROM oven/bun:alpine AS frontend
+FROM node:20-alpine AS frontend
 WORKDIR /app/frontend
 COPY frontend/ .
-RUN bun install && bun run build
+RUN npm install && npm run build
 
 # Step 2: Build Go backend
 FROM golang:1.24-alpine AS backend
