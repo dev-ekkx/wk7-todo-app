@@ -118,9 +118,12 @@ func ConfigAWS(c *gin.Context) {
 	if err != nil {
 		panic("unable to load SDK config, " + err.Error())
 	}
-	dynamoDbClient = dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
-		o.BaseEndpoint = aws.String("http://localhost:8000")
-	})
+
+	// dynamoDbClient = dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
+	// 	o.BaseEndpoint = aws.String("http://localhost:8000")
+	// })
+
+	dynamoDbClient = dynamodb.NewFromConfig(cfg)
 
 	fmt.Println("Successfully loaded AWS SDK configuration:", cfg.Region)
 
