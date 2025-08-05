@@ -33,7 +33,7 @@ func main() {
 	{
 		api.GET("/todos", services.ListTodoItems)
 		api.POST("/create-todo", services.CreateTodo)
-		// api.DELETE("/images/:key", services.DeleteImage)
+		api.PUT("/todos/:id/toggle", services.ToggleTodoStatus)
 	}
 
 	if port == "" {

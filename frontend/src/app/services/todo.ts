@@ -26,6 +26,11 @@ export class Todo {
       message: "Todo created successfully"
       todo: TodoInterface;
     }>(`${this.host}/create-todo`, formData)
+  }
 
+  public toggleStatus(id: string) {
+    return this.http.put<{
+      todo: TodoInterface;
+    }>(`${this.host}/todos/${id}/toggle`, {})
   }
 }

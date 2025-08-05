@@ -22,7 +22,7 @@ export class App implements OnInit, OnDestroy {
   protected isSubmitting = signal(false);
   protected todos = signal<TodoInterface[]>(this.todosService.todos());
   protected newTodo = signal<TodoInterface>({
-    id: crypto.randomUUID(),
+    id: "",
     value: '',
     status: 'active',
   });
@@ -93,42 +93,25 @@ export class App implements OnInit, OnDestroy {
         this.todoTitle.set("");
       }
     })
-
-  //   const value = (this.todoTitle() ?? "").trim();
-  //     this.newTodo.set({
-  //       ...this.newTodo(),
-  //       value,
-  //       id: crypto.randomUUID()
-  //     });
-
-  // this.todos.update(todos => {
-  //     const newTodos = [...todos, this.newTodo()];
-  //     localStorage.setItem('todos', JSON.stringify(newTodos));
-  //     return newTodos;
-  //   });
-  //   this.todoTitle.set("");
-  //   this.newTodo.set({
-  //     id: crypto.randomUUID(),
-  //     value: '',
-  //     status: 'active',
-  // })
   }
 
-  markAsCompleted(id: string) {
-    this.todos.update(todos => {
-      const updatedTodos = todos.map(todo => {
-        if (todo.id === id) {
-          const currentStatus = todo.status;
-          if (currentStatus === 'completed') {
-            return { ...todo, status: 'active' as TodoInterface['status'] };
-          }
-          return { ...todo, status: 'completed' as TodoInterface['status'] };
-        }
-        return todo;
-      });
-      localStorage.setItem('todos', JSON.stringify(updatedTodos));
-      return updatedTodos;
+  toggleStatus(id: string) {
+    this.todosService.toggleStatus(id).pipe(take(1)).subscribe({
+      next: (response) => {
+        this.todos.update(todos => {
+          return todos.map(todo => {
+            if (todo.id === id) {
+              return response.todo;
+            }
+            return todo;
+          });
+        });
+      },
+      error: (error) => {
+        console.error('Error toggling status:', error);
+      }
     });
+
   }
 
   updateTodo(id: string) {

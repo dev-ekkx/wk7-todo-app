@@ -34,7 +34,7 @@
         <div class="max-h-[25rem] flex flex-col gap-4 overflow-y-auto divide-neutral-300 divide-y">
         @for (todo of todoList(); track todo.id) {
           <div class="flex items-center px-4 gap-4" [class.pb-4]="$index === 0" [class]="todo.status === 'completed' ? 'line-through italic text-neutral-500' : ''">
-            <button (click)="markAsCompleted(todo.id)" class="w-5 h-5 rounded-full border border-neutral-300 cursor-pointer">
+            <button (click)="toggleStatus(todo.id)" class="w-5 h-5 rounded-full border border-neutral-300 cursor-pointer">
               @if (todo.status === "completed") {
                 <img src="assets/images/check.svg" alt="check">
               }

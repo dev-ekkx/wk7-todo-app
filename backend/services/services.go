@@ -213,3 +213,75 @@ func CreateTodo(c *gin.Context) {
 	// return the created todo item to frontend
 	c.JSON(http.StatusCreated, gin.H{"todo": newTodoJSON})
 }
+
+func ToggleTodoStatus(c *gin.Context) {
+	todoID := c.Param("id")
+	if todoID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing todo ID"})
+		return
+	}
+
+	// 1. Get the current item by ID
+	getInput := &dynamodb.GetItemInput{
+		TableName: tableName,
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: todoID},
+		},
+	}
+
+	result, err := dynamoDbClient.GetItem(c, getInput)
+	if err != nil || result.Item == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Todo item not found"})
+		return
+	}
+
+	var existing DBTodoStruct
+	err = attributevalue.UnmarshalMap(result.Item, &existing)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unmarshal todo item"})
+		return
+	}
+
+	// 2. Determine new status
+	newStatus := "pending"
+	if existing.Status == "pending" {
+		newStatus = "completed"
+	}
+	currentTime := time.Now().Format("2006-01-02")
+
+	// 3. Update the item with new status
+	updateInput := &dynamodb.UpdateItemInput{
+		TableName: tableName,
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: todoID},
+		},
+		UpdateExpression: aws.String("SET #s = :s, #u = :u"),
+		ExpressionAttributeNames: map[string]string{
+			"#s": "status",
+			"#u": "updatedAt",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":s": &types.AttributeValueMemberS{Value: newStatus},
+			":u": &types.AttributeValueMemberS{Value: currentTime},
+		},
+		ReturnValues: types.ReturnValueAllNew,
+	}
+
+	updated, err := dynamoDbClient.UpdateItem(c, updateInput)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update todo status"})
+		return
+	}
+
+	var updatedTodo DBTodoStruct
+	err = attributevalue.UnmarshalMap(updated.Attributes, &updatedTodo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse updated todo"})
+		return
+	}
+
+	// 4. Convert to JSON response struct
+	response := TodoStruct(updatedTodo)
+
+	c.JSON(http.StatusOK, gin.H{"todo": response})
+}
