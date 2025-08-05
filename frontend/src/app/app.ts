@@ -16,15 +16,16 @@ export class App implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>() 
   protected todosService = inject(Todo);
   protected todoStatus = signal<TodoStatus>(localStorage.getItem('todoStatus') as TodoStatus || 'all');
-  protected statusButtons = signal<TodoStatus[]>(['all', 'active', 'completed']);
+  protected statusButtons = signal<TodoStatus[]>(['all', 'pending', 'completed']);
   protected todoTitle = signal("");
+  protected previousValue = signal("");
   protected isLoading = signal(false);
   protected isSubmitting = signal(false);
   protected todos = signal<TodoInterface[]>(this.todosService.todos());
   protected newTodo = signal<TodoInterface>({
     id: "",
     value: '',
-    status: 'active',
+    status: 'pending',
   });
   
   protected todoList = computed(() => {
@@ -35,7 +36,7 @@ export class App implements OnInit, OnDestroy {
   })
   
   protected activeTodosCount = computed(() => {
-    return this.todos().filter(todo => todo.status === 'active').length;
+    return this.todos().filter(todo => todo.status !== 'completed').length;
   });
   
   constructor() {
@@ -74,7 +75,7 @@ export class App implements OnInit, OnDestroy {
           return value.length > 2;
         });
 
-  onSubmit(event: Event) {
+  createTodo(event: Event) {
     event.preventDefault();
     this.isSubmitting.set(true);
 
@@ -114,17 +115,25 @@ export class App implements OnInit, OnDestroy {
 
   }
 
+
   updateTodo(id: string) {
-    this.todos.update(todos => {
-      const updatedTodos = todos.map(todo => {
-        if (todo.id === id) {
-          return { ...todo, value: todo.value.trim() };
-        }
-        return todo;
-      });
-      localStorage.setItem('todos', JSON.stringify(updatedTodos));
-      return updatedTodos;
-    });
+    const todoToUpdate = this.todos().find(todo => todo.id === id);
+    if (!todoToUpdate || this.previousValue().trim() === todoToUpdate.value.trim() ) return;
+    this.todosService.updateTodo(id, todoToUpdate.value.trim()).pipe(take(1)).subscribe({
+      next: (response) => {
+        this.todos.update(todos => {
+          return todos.map(todo => {
+            if (todo.id === id) {
+              return response.todo;
+            }
+            return todo;
+          });
+        })
+      },
+      error: (error) => {
+        console.error('Error updating todo:', error);
+      }
+    })
   }
 
   clearCompleted() {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -281,6 +282,107 @@ func ToggleTodoStatus(c *gin.Context) {
 	}
 
 	// 4. Convert to JSON response struct
+	response := TodoStruct(updatedTodo)
+
+	c.JSON(http.StatusOK, gin.H{"todo": response})
+}
+
+func UpdateTodo(c *gin.Context) {
+	todoID := c.Param("id")
+	if todoID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing todo ID"})
+		return
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid form data"})
+		return
+	}
+
+	valueField := form.Value["value"]
+	statusField := form.Value["status"]
+
+	if len(valueField) == 0 && len(statusField) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "At least one of 'value' or 'status' must be provided"})
+		return
+	}
+
+	// 1. Fetch the existing todo
+	getInput := &dynamodb.GetItemInput{
+		TableName: tableName,
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: todoID},
+		},
+	}
+
+	getResult, err := dynamoDbClient.GetItem(c, getInput)
+	if err != nil || getResult.Item == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+		return
+	}
+
+	var existing DBTodoStruct
+	err = attributevalue.UnmarshalMap(getResult.Item, &existing)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unmarshal existing todo"})
+		return
+	}
+
+	// 2. Reject update if already completed
+	if existing.Status == "completed" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot update a completed todo"})
+		return
+	}
+
+	// 3. Prepare update expression
+	exprAttrValues := map[string]types.AttributeValue{}
+	exprAttrNames := map[string]string{}
+	updateExprParts := []string{}
+
+	if len(valueField) > 0 {
+		exprAttrNames["#v"] = "value"
+		exprAttrValues[":v"] = &types.AttributeValueMemberS{Value: valueField[0]}
+		updateExprParts = append(updateExprParts, "#v = :v")
+	}
+
+	if len(statusField) > 0 {
+		exprAttrNames["#s"] = "status"
+		exprAttrValues[":s"] = &types.AttributeValueMemberS{Value: statusField[0]}
+		updateExprParts = append(updateExprParts, "#s = :s")
+	}
+
+	currentTime := time.Now().Format("2006-01-02")
+	exprAttrNames["#u"] = "updatedAt"
+	exprAttrValues[":u"] = &types.AttributeValueMemberS{Value: currentTime}
+	updateExprParts = append(updateExprParts, "#u = :u")
+
+	// 4. Execute the update
+	updateInput := &dynamodb.UpdateItemInput{
+		TableName: tableName,
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: todoID},
+		},
+		UpdateExpression:          aws.String("SET " + strings.Join(updateExprParts, ", ")),
+		ExpressionAttributeNames:  exprAttrNames,
+		ExpressionAttributeValues: exprAttrValues,
+		ReturnValues:              types.ReturnValueAllNew,
+	}
+
+	updateResult, err := dynamoDbClient.UpdateItem(c, updateInput)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to update todo: %v", err.Error())})
+		return
+	}
+
+	var updatedTodo DBTodoStruct
+	err = attributevalue.UnmarshalMap(updateResult.Attributes, &updatedTodo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse updated todo"})
+		return
+	}
+
+	// Convert to response struct
 	response := TodoStruct(updatedTodo)
 
 	c.JSON(http.StatusOK, gin.H{"todo": response})

@@ -33,4 +33,13 @@ export class Todo {
       todo: TodoInterface;
     }>(`${this.host}/todos/${id}/toggle`, {})
   }
+
+  public updateTodo(id: string, value: string) {
+    const formData = new FormData()
+    formData.append('value', value)
+    return this.http.put<{
+      todo: TodoInterface;
+    }>(`${this.host}/todos/${id}`, formData)
+  }
+
 }

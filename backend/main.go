@@ -12,11 +12,6 @@ import (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	// Load environment variables frm go dojo
-	// er := godotenv.Load()
-	// if er != nil {
-	// 	log.Fatal("Error loading .env file")
-	// }
 	port := os.Getenv("PORT")
 
 	r := gin.Default()
@@ -34,6 +29,7 @@ func main() {
 		api.GET("/todos", services.ListTodoItems)
 		api.POST("/create-todo", services.CreateTodo)
 		api.PUT("/todos/:id/toggle", services.ToggleTodoStatus)
+		api.PUT("/todos/:id", services.UpdateTodo)
 	}
 
 	if port == "" {

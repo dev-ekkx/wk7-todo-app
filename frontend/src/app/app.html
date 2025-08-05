@@ -5,7 +5,7 @@
   <div class="absolute top-0 left-0 w-full -z-10 h-[15rem] bg-[url('assets/images/background.svg')] bg-cover bg-center"></div>
   <section class=" w-full max-w-lg px-2 md:px-0 mx-auto my-20 flex flex-col gap-4">
     <h2 class="text-white text-3xl font-semibold mb-2">Todo App</h2>
-    <form (ngSubmit)="onSubmit($event)" 
+    <form (ngSubmit)="createTodo($event)" 
     class="flex items-center gap-4 p-4 bg-white border border-neutral-300 rounded-md shadow-md"
     >
     <button 
@@ -46,6 +46,8 @@
               id="todo-{{todo.id}}"
               name="todo-{{todo.id}}"
               (blur)="updateTodo(todo.id)"
+              (focus)="previousValue.set(todo.value)"
+              [disabled]="todo.status === 'completed'"
               [(ngModel)]="todo.value"
               class="w-full outline-none"
               [class]="todo.status === 'completed' ? 'line-through italic text-neutral-500' : ''"
@@ -66,7 +68,7 @@
           class="capitalize"
           [class.text-blue-500]="todoStatus() === status"
           >
-            {{status}}
+            {{status === "pending" ? "Active" : status}}
           </button>
         }
       </div>
