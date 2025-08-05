@@ -59,6 +59,7 @@ export class App implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error fetching todos:', error);
+        this.isLoading.set(false);
       },
       complete: () => {
         this.isLoading.set(false);
@@ -85,6 +86,7 @@ export class App implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error creating todo:', error);
+        this.isSubmitting.set(false);
       },
       complete: () => {
         this.isSubmitting.set(false);

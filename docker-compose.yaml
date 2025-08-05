@@ -1,10 +1,29 @@
+networks:
+    local-net:
+
 services:
+  dynamodb:
+   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+   image: "amazon/dynamodb-local:latest"
+   container_name: dynamodb-1
+   ports:
+     - "8000:8000"
+   volumes:
+     - "./docker/dynamodb:/home/dynamodblocal/data"
+   working_dir: /home/dynamodblocal
+   networks:
+      - local-net
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - dynamodb
     ports:
       - "8081:8081"
     env_file:
       - .env
     restart: unless-stopped
+    networks:
+      - local-net

@@ -17,12 +17,11 @@ func main() {
 	// if er != nil {
 	// 	log.Fatal("Error loading .env file")
 	// }
-
 	port := os.Getenv("PORT")
 
-	// services.InitAWS()
-
 	r := gin.Default()
+	r.Use(services.ConfigAWS)
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -32,8 +31,8 @@ func main() {
 
 	api := r.Group("/api")
 	{
-		api.POST("/create-todo", services.CreateTodo)
 		api.GET("/todos", services.ListTodoItems)
+		api.POST("/create-todo", services.CreateTodo)
 		// api.DELETE("/images/:key", services.DeleteImage)
 	}
 
