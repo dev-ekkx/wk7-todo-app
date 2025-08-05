@@ -387,3 +387,55 @@ func UpdateTodo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"todo": response})
 }
+
+func ClearCompletedTodos(c *gin.Context) {
+	// 1. Query the GSI for completed todos
+	queryInput := &dynamodb.QueryInput{
+		TableName:              tableName,
+		IndexName:              aws.String("StatusIndex"),
+		KeyConditionExpression: aws.String("#s = :status"),
+		ExpressionAttributeNames: map[string]string{
+			"#s": "status",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":status": &types.AttributeValueMemberS{Value: "completed"},
+		},
+	}
+
+	queryOutput, err := dynamoDbClient.Query(c, queryInput)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to query completed todos: %v", err)})
+		return
+	}
+
+	if len(queryOutput.Items) == 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "No completed todos to delete"})
+		return
+	}
+
+	// 2. Delete each completed todo by its id
+	deletedIDs := []string{}
+	for _, item := range queryOutput.Items {
+		var todo DBTodoStruct
+		err := attributevalue.UnmarshalMap(item, &todo)
+		if err != nil {
+			// skip malformed items
+			continue
+		}
+
+		_, err = dynamoDbClient.DeleteItem(c, &dynamodb.DeleteItemInput{
+			TableName: tableName,
+			Key: map[string]types.AttributeValue{
+				"id": &types.AttributeValueMemberS{Value: todo.ID},
+			},
+		})
+		if err == nil {
+			deletedIDs = append(deletedIDs, todo.ID)
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Completed todos deleted successfully",
+		"deletedTodo": deletedIDs,
+	})
+}

@@ -42,4 +42,10 @@ export class Todo {
     }>(`${this.host}/todos/${id}`, formData)
   }
 
+  public clearCompleted() {
+    return this.http.delete<{
+      message: string;
+      deletedTodo: string[];
+    }>(`${this.host}/todos/clear-completed`)
+  }
 }

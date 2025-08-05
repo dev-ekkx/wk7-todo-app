@@ -73,7 +73,7 @@
         }
       </div>
       <button 
-      [disabled]="!todos().length" 
+      [disabled]="!completedTodosCount()" 
       class="cursor-pointer hover:text-red-500 transition-all disabled:pointer-events-none"
        (click)="clearCompleted()">Clear Completed</button>
       </div>

@@ -30,6 +30,7 @@ func main() {
 		api.POST("/create-todo", services.CreateTodo)
 		api.PUT("/todos/:id/toggle", services.ToggleTodoStatus)
 		api.PUT("/todos/:id", services.UpdateTodo)
+		api.DELETE("/todos/clear-completed", services.ClearCompletedTodos)
 	}
 
 	if port == "" {

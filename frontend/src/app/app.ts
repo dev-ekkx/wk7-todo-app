@@ -38,6 +38,10 @@ export class App implements OnInit, OnDestroy {
   protected activeTodosCount = computed(() => {
     return this.todos().filter(todo => todo.status !== 'completed').length;
   });
+
+  protected completedTodosCount = computed(() => {
+    return this.todos().filter(todo => todo.status === 'completed').length;
+  });
   
   constructor() {
           effect(() => {
@@ -59,7 +63,7 @@ export class App implements OnInit, OnDestroy {
         localStorage.setItem('todos', JSON.stringify(response.todos));
       },
       error: (error) => {
-        console.error('Error fetching todos:', error);
+        alert('Error fetching todos: ' + error);
         this.isLoading.set(false);
       },
       complete: () => {
@@ -86,7 +90,7 @@ export class App implements OnInit, OnDestroy {
       });
       },
       error: (error) => {
-        console.error('Error creating todo:', error);
+        alert('Error creating todo: ' + error);
         this.isSubmitting.set(false);
       },
       complete: () => {
@@ -109,7 +113,7 @@ export class App implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
-        console.error('Error toggling status:', error);
+        alert('Error toggling status: ' + error);
       }
     });
 
@@ -131,16 +135,22 @@ export class App implements OnInit, OnDestroy {
         })
       },
       error: (error) => {
-        console.error('Error updating todo:', error);
+        alert('Error updating todo: ' + error);
       }
     })
   }
 
   clearCompleted() {
-    this.todos.update(todos => {
-    localStorage.setItem('todos', JSON.stringify(this.todos()));
-      return todos.filter(todo => todo.status !== 'completed');
-    });
+    alert('Are you sure you want to clear completed todos?');
+    this.todosService.clearCompleted().pipe(take(1)).subscribe({
+      next: (response) => {
+        alert(response.message);
+        this.loadTodos()
+      },
+      error: (error) => {
+        alert('Error clearing completed todos: ' + error);
+      }
+    })
   }
 
   updateTodoStatus(status: TodoStatus) {
