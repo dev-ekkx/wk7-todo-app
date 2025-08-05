@@ -208,13 +208,7 @@ func CreateTodo(c *gin.Context) {
 	}
 
 	// Convert to JSON response struct
-	newTodoJSON := TodoStruct{
-		ID:        newTodoDB.ID,
-		Value:     newTodoDB.Value,
-		Status:    newTodoDB.Status,
-		CreatedAt: newTodoDB.CreatedAt,
-		UpdatedAt: newTodoDB.UpdatedAt,
-	}
+	newTodoJSON := TodoStruct(newTodoDB)
 
 	// return the created todo item to frontend
 	c.JSON(http.StatusCreated, gin.H{"todo": newTodoJSON})
